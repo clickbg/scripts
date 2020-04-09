@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Multiplatform script to monitor ZFS zpool status and capacity 
+# Multiplatform script to monitor ZFS zpool status and capacity
 # Author: Daniel Zhelev @ https://zhelev.biz
 MAILTO="root"
 CAPACITY_THRESHOLD="80"
@@ -31,7 +31,7 @@ health_check()
     for POOL in $POOLS
     do
      ERR_STATE=$($ZPOOL status | egrep -i '(DEGRADED|FAULTED|OFFLINE|UNAVAIL|REMOVED|FAIL|DESTROYED|corrupt|cannot|unrecover)')
-     if [ "${ERR_STATE}" ] 
+     if [ "${ERR_STATE}" ]
      then
       MSG="$(hostname -f) - ZFS pool $POOL - HEALTH fault"
       send_mail "$MSG"
@@ -58,11 +58,11 @@ capacity_check()
 }
 
 ###################### Execution
+POOLS="$@"
+[[ -z $POOLS ]] && die "Usage: $(readlink -f $0) pool1 pool2 poolN"
 [[ -z $ZPOOL ]] && die "Please specify the path to zpool."
 [[ -z $MAIL ]] && die "Please specify the path mail."
-POOLS=$($ZPOOL list -H -o name)
 health_check
 capacity_check
 
 exit $EXIT
-
