@@ -3,6 +3,7 @@
 # Author: Daniel Zhelev @ https://zhelev.biz
 MAILTO="root"
 CAPACITY_THRESHOLD="80"
+LOG_PREFIX="$(date +%Y-%m-%d\ %H:%M:%S) $HOSTNAME"
 
 
 ###################### Internal vars
@@ -36,7 +37,10 @@ health_check()
       MSG="$(hostname -f) - ZFS pool $POOL - HEALTH fault"
       send_mail "$MSG"
       logger "$MSG"
+      echo "$LOG_PREFIX CRITICAL: $POOL: HEALTH: DEGRADED" >&2
       let "EXIT++"
+     else
+      echo "$LOG_PREFIX INFO: $POOL: HEALTH: NORMAL"
      fi
     done
 }
@@ -53,6 +57,9 @@ capacity_check()
       send_mail "$MSG"
       logger "$MSG"
       let "EXIT++"
+      echo "$LOG_PREFIX CRITICAL: $POOL: CAPACITY: ISSUES DETECTED CURRENT UTILIZATION $CURRENT_UTILIZATION GREATER THAN THRESHOLD $CAPACITY_THRESHOLD" >&2
+     else
+      echo "$LOG_PREFIX INFO: $POOL: CAPACITY: NORMAL"
      fi
     done
 }
@@ -62,6 +69,7 @@ POOLS="$@"
 [[ -z $POOLS ]] && die "Usage: $(readlink -f $0) pool1 pool2 poolN"
 [[ -z $ZPOOL ]] && die "Please specify the path to zpool."
 [[ -z $MAIL ]] && die "Please specify the path mail."
+
 health_check
 capacity_check
 
